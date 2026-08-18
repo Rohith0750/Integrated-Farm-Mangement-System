@@ -1,0 +1,100 @@
+================================================================================
+INTEGRATED FARM MANAGEMENT SYSTEM (PRJ_533) - PROJECT CONTEXT & PROGRESS LOG
+================================================================================
+Repository Name : Rohith0750/Integrated-Farm-Mangement-System
+Local Path      : C:\Users\Rohith S D\OneDrive\Documents\Farm Management
+Document Name   : context.txt
+Last Updated    : 2026-08-18
+
+--------------------------------------------------------------------------------
+1. EXECUTIVE SUMMARY & PROJECT GOAL
+--------------------------------------------------------------------------------
+PRJ_533 is an integrated agricultural resource management and decision-support 
+platform engineered to centralize farm operations, optimize resource utilization 
+(water, fertilizer, equipment, capital), and provide data-driven predictive 
+insights for modern farming.
+
+The platform bridges raw agricultural datasets, open environmental/weather APIs, 
+and machine learning models (crop suitability recommendation, yield forecasting, 
+and leaf disease diagnosis via computer vision) with an intuitive control panel 
+for farmers, farm managers, and agricultural advisors.
+
+--------------------------------------------------------------------------------
+2. LOG OF PAST WORKS COMPLETED
+--------------------------------------------------------------------------------
+
+[COMMITS & MILESTONES HISTORY]
+
+• Commit 4f3ebca (2026-08-10):
+  - Initialized project architecture and created comprehensive README.md (680+ lines).
+  - Defined problem statement, goals, architectural tiers, directory layout, database schema collections, REST API specifications, and ML pipeline design.
+  - Added visual technology stack architecture asset ("Tech Stack image.png").
+
+• Commit 4e5b22e (2026-08-18):
+  - Created CONTRIBUTING.md (330+ lines) defining open-source contribution guidelines.
+  - Established Code of Conduct, developer environment setup instructions (manual & Docker Compose), Conventional Commits standards, branch naming conventions, PR templates, and coding standards across Frontend, Backend, and ML microservices.
+  - Updated README.md table of contents and cross-references.
+
+• Current Session (2026-08-18):
+  - Generated context.txt persistence record capturing past activities, system specifications, progress metrics, and actionable implementation roadmap.
+
+--------------------------------------------------------------------------------
+3. CURRENT PROJECT PROGRESS & STATUS
+--------------------------------------------------------------------------------
+Overall Progress Status: Phase 1 & Phase 2 Complete (Architecture & Governance)
+
+Completed Objectives:
+[X] Project Vision & Problem Statement Definition
+[X] Multi-Tier System Architecture Design (React + Express + FastAPI + MongoDB)
+[X] Database Schema & Collection Modeling
+[X] RESTful API Endpoint Specification Design
+[X] AI/ML Pipeline & Data Stream Strategy
+[X] Visual Tech Stack Diagram Asset Integration
+[X] Open-Source Developer Guidelines & Setup Documentation (CONTRIBUTING.md)
+[X] Repository Context & Progress Tracker File (context.txt)
+
+Pending Objectives:
+[ ] Phase 3: Core Codebase Development
+    - [ ] Root workspace orchestration & Docker Compose setup
+    - [ ] Express.js Backend REST API development & Mongoose database models
+    - [ ] Python FastAPI microservice for ML inference (Crop Rec, Yield, Disease)
+    - [ ] React.js + TypeScript dashboard UI with Tailwind CSS & Recharts/Leaflet
+[ ] Phase 4: Testing & Integration Verification
+    - [ ] Unit & Integration tests (Jest/Supertest & PyTest)
+    - [ ] E2E dashboard UI validation
+[ ] Phase 5: CI/CD Pipeline & Cloud Deployment
+
+--------------------------------------------------------------------------------
+4. SYSTEM ARCHITECTURE & TECHNICAL SPECIFICATIONS
+--------------------------------------------------------------------------------
+Architectural Pattern: Decoupled Multi-Tier System
+
+• Tier 1: Client Application (Frontend)
+  - Tech: React.js, TypeScript, Vite/Next.js, Tailwind CSS, Lucide Icons, Recharts, Leaflet.js
+  - Role: Responsive UI dashboard for farm analytics, disease diagnosis, field maps, and finance.
+
+• Tier 2: Core Backend API (Server)
+  - Tech: Node.js, Express.js, MongoDB (Mongoose ORM), JWT Authentication, Winston Logger
+  - Role: Business logic, user auth, field management, resource scheduling, external weather API consumption, data proxying to ML service.
+
+• Tier 3: AI/ML Microservice (Intelligence)
+  - Tech: Python 3.10+, FastAPI, Uvicorn, Scikit-Learn, PyTorch / OpenCV, XGBoost, Pandas, NumPy
+  - Role: Serves endpoints for ML predictions (Crop recommendation based on NPK/pH/rainfall, yield prediction, plant disease leaf image classification).
+
+• Tier 4: Database Storage
+  - Tech: MongoDB (Atlas / Self-hosted container)
+  - Role: Persists Users, Farms, Fields, Soil Logs, Crop Cycles, Disease Logs, Equipment, Labor, Financial Ledger.
+
+--------------------------------------------------------------------------------
+5. NEXT STEPS & ACTIONABLE ROADMAP
+--------------------------------------------------------------------------------
+1. Initialize codebase directory structure:
+   - client/ (React.js frontend)
+   - server/ (Express.js backend)
+   - ml-service/ (FastAPI ML service)
+   - docker-compose.yml & environment configurations
+2. Build backend MongoDB Mongoose models and Auth / Field endpoints.
+3. Build FastAPI ML microservice endpoints with pre-trained models/mock inference logic.
+4. Implement frontend dashboard components and integrate REST APIs.
+5. Perform end-to-end system testing and document results.
+================================================================================
