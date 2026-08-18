@@ -656,13 +656,16 @@ The application is designed for cloud-native deployment using distributed hostin
 
 ## Contribution Guidelines
 
-Contributions from developers and researchers are welcome. Please follow the standard Git workflow:
+Contributions from developers, data scientists, and agricultural researchers are welcome! 
 
+For comprehensive, step-by-step instructions on setting up your local development environment, environment variable configurations, branch naming conventions, commit guidelines, coding standards, and submitting pull requests, please refer to our dedicated [CONTRIBUTING.md](CONTRIBUTING.md) guide.
+
+Quick Git Workflow:
 1. **Fork** the repository on GitHub.
 2. **Create a Feature Branch**: `git checkout -b feature/your-feature-name`
-3. **Commit Your Changes**: `git commit -m "Add descriptive summary of changes"`
+3. **Commit Your Changes**: `git commit -m "feat(module): add descriptive summary of changes"`
 4. **Push to the Branch**: `git push origin feature/your-feature-name`
-5. **Open a Pull Request**: Submit your pull request against the `main` branch with a thorough explanation of the changes made.
+5. **Open a Pull Request**: Submit your pull request against the `main` branch.
 
 ---
 
