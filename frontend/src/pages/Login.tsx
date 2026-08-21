@@ -24,8 +24,9 @@ export const Login: React.FC = () => {
     try {
       await login(email, password);
       navigate('/dashboard');
-    } catch {
-      setError('Invalid login credentials. Please try again.');
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'Invalid login credentials. Please try again.';
+      setError(msg);
     } finally {
       setIsSubmitting(false);
     }

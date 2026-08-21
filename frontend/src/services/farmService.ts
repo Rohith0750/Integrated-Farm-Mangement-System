@@ -139,7 +139,13 @@ export const farmService = {
   getFields: async (farmId?: string): Promise<Field[]> => {
     try {
       const res = await api.get('/fields', { params: { farmId } });
-      return res.data;
+      if (Array.isArray(res.data) && res.data.length > 0) {
+        return res.data.map((f: any) => ({
+          ...f,
+          id: f._id || f.id
+        }));
+      }
+      return MOCK_FIELDS;
     } catch {
       if (farmId) return MOCK_FIELDS.filter((f) => f.farmId === farmId);
       return MOCK_FIELDS;
@@ -172,7 +178,10 @@ export const farmService = {
   createField: async (fieldData: Partial<Field>): Promise<Field> => {
     try {
       const res = await api.post('/fields', fieldData);
-      return res.data;
+      return {
+        ...res.data,
+        id: res.data._id || res.data.id
+      };
     } catch {
       const newField: Field = {
         id: `fld-${Date.now()}`,
@@ -195,6 +204,23 @@ export const farmService = {
     }
   },
 
+  updateField: async (id: string, fieldData: Partial<Field>): Promise<Field> => {
+    try {
+      const res = await api.put(`/fields/${id}`, fieldData);
+      return {
+        ...res.data,
+        id: res.data._id || res.data.id
+      };
+    } catch {
+      const idx = MOCK_FIELDS.findIndex((f) => f.id === id || f._id === id);
+      if (idx !== -1) {
+        MOCK_FIELDS[idx] = { ...MOCK_FIELDS[idx], ...fieldData };
+        return MOCK_FIELDS[idx];
+      }
+      return fieldData as Field;
+    }
+  },
+
   deleteFarm: async (id: string): Promise<boolean> => {
     try {
       await api.delete(`/farms/${id}`);
@@ -209,9 +235,11 @@ export const farmService = {
   deleteField: async (id: string): Promise<boolean> => {
     try {
       await api.delete(`/fields/${id}`);
+      const idx = MOCK_FIELDS.findIndex((f) => f.id === id || f._id === id);
+      if (idx !== -1) MOCK_FIELDS.splice(idx, 1);
       return true;
     } catch {
-      const idx = MOCK_FIELDS.findIndex((f) => f.id === id);
+      const idx = MOCK_FIELDS.findIndex((f) => f.id === id || f._id === id);
       if (idx !== -1) MOCK_FIELDS.splice(idx, 1);
       return true;
     }

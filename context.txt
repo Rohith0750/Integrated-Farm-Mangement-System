@@ -4,7 +4,7 @@ INTEGRATED FARM MANAGEMENT SYSTEM (PRJ_533) - PROJECT CONTEXT & PROGRESS LOG
 Repository Name : Rohith0750/Integrated-Farm-Mangement-System
 Local Path      : C:\Users\Rohith S D\OneDrive\Documents\Farm Management
 Document Name   : context.txt
-Last Updated    : 2026-08-18
+Last Updated    : 2026-08-21
 
 --------------------------------------------------------------------------------
 1. EXECUTIVE SUMMARY & PROJECT GOAL
@@ -44,25 +44,74 @@ for farmers, farm managers, and agricultural advisors.
 • Milestone: Backend API & Database Contract Specification (2026-08-18):
   - Authored `docs/BACKEND_SPECIFICATION.md` detailing single-file specification for Node/Express REST API endpoints, Mongoose schemas, environment configurations, and FastAPI proxy contracts.
 
+• Milestone: Backend Authentication & Authorization Structure (2026-08-21):
+  - Initialized isolated `backend/` directory with Node.js, Express.js, MongoDB Atlas (Mongoose), JWT, bcryptjs, cookie-parser, cors, and dotenv.
+  - Created Mongoose User model (`src/models/User.js`) with bcrypt password hashing pre-save hook, role-based schema (`Admin`, `Farm Manager`, `Worker`), active flag, and safe object serialization.
+  - Built JWT utility module (`src/utils/jwt.js`) for token signing and verification using env variables (`JWT_SECRET`, `JWT_EXPIRES_IN`).
+  - Implemented authentication service (`src/services/authService.js`) and controllers (`src/controllers/authController.js`) for user registration, login, logout, and profile retrieval.
+  - Implemented authentication middleware (`src/middleware/authMiddleware.js`) supporting HTTP-only cookie parsing and Bearer header fallback with user status verification.
+  - Implemented Role-Based Access Control (RBAC) authorization middleware (`src/middleware/roleMiddleware.js`).
+  - Implemented centralized error handling middleware (`src/middleware/errorMiddleware.js`) with credential sanitization.
+  - Configured Express server (`src/server.js`), database connector (`src/config/db.js`), `.env`, `.env.example`, `.gitignore`, `package.json`, `README.md`, and `backend/contextbackend.md`.
+  - Verified backend dependencies (`npm install` PASS) and connected MongoDB Atlas cluster (`ac-zgl8wai-shard-00-00.n7zxp5q.mongodb.net`).
+
+• Milestone: Frontend-Backend Authentication Integration & CORS Resolution (2026-08-21):
+  - Configured `frontend/.env` with `VITE_API_BASE_URL=http://localhost:5000/api`.
+  - Updated `backend/src/routes/userRoutes.js` and `backend/src/server.js` to expose `GET /api/users/profile` for profile verification.
+  - Resolved CORS Network Error by configuring `CLIENT_URL=http://localhost:3000` and updating CORS allowed origins in `server.js` to dynamically support Vite server port 3000 (`http://localhost:3000`, `http://localhost:5173`).
+  - Updated `frontend/src/services/api.ts` with `withCredentials: true` and request interceptors passing `Authorization: Bearer <JWT>`.
+  - Updated `frontend/src/services/authService.ts` to call real backend REST endpoints (`/auth/login`, `/auth/register`, `/users/profile`, `/auth/logout`) and eliminated mock authentication fallbacks.
+  - Refactored `frontend/src/context/AuthContext.tsx` to restore and verify active user sessions on page reload via `GET /api/users/profile` and manage JWT storage.
+  - Enhanced error handling in `frontend/src/pages/Login.tsx` and `frontend/src/pages/Register.tsx` to display real backend validation messages.
+  - Verified end-to-end user authentication flow live between React frontend (port 3000) and Express backend (port 5000) connected to MongoDB Atlas.
+
+• Milestone: Google Maps GIS Integration & MongoDB Field Persistence (2026-08-21):
+  - Configured `VITE_GOOGLE_MAPS_API_KEY` in `frontend/.env` (no hardcoded keys in source code).
+  - Installed `@googlemaps/js-api-loader` and `@types/google.maps` in `frontend/`.
+  - Built reusable `GoogleFieldMap.tsx` component featuring:
+    - Google Places Autocomplete search for cities, towns, villages, addresses, and landmarks.
+    - Interactive map clicks and draggable markers with reverse geocoding via `google.maps.Geocoder`.
+    - "My Location" GPS button with browser location fallback.
+    - Custom InfoWindows displaying Field Name, Crop, Soil, Area, Address, Lat/Lng, Edit, and Delete actions.
+    - Updated map layer header to **"Google Maps Live Layer"**.
+  - Replaced OpenStreetMap/Leaflet map on the **"Field Sector GIS Mapping"** page (`src/pages/Fields.tsx`).
+  - Built backend Mongoose `Field` model (`backend/src/models/Field.js`), `fieldController.js`, and `fieldRoutes.js` mounted at `/api/fields` and `/api/field-sectors`.
+  - Connected `farmService.ts` to execute real CRUD operations (`GET`, `POST`, `PUT`, `DELETE`) against MongoDB Atlas.
+  - Verified zero-error TypeScript build (`npm run build` PASS) and backend field CRUD tests PASS.
+
 --------------------------------------------------------------------------------
 3. CURRENT PROJECT PROGRESS & STATUS
 --------------------------------------------------------------------------------
-Overall Progress Status: Phase 1 (Architecture), Phase 2 (Governance), Phase 3 (Frontend App), and Backend Specification COMPLETE.
+Overall Progress Status: Phase 1 (Architecture), Phase 2 (Governance), Phase 3 (Frontend App), Backend Specification, Backend Auth Foundation, Frontend Integration, and Google Maps GIS Persistence COMPLETE.
 
 Completed Objectives:
 [X] Project Vision & Problem Statement Definition
 [X] Multi-Tier System Architecture Design (React + Express + FastAPI + MongoDB)
 [X] Open-Source Developer Guidelines & Setup Documentation (CONTRIBUTING.md)
 [X] Complete Frontend Application (React + TypeScript + Vite + Tailwind CSS + Recharts + Leaflet)
-    - [X] All 16 Page views created & fully functional with mock service fallback
+    - [X] All 16 Page views created & fully functional
     - [X] Explainable AI Decision Support Engine components (DecisionSupportCard)
-    - [X] Interactive analytics charts (Recharts) & Geospatial GIS maps (Leaflet)
+    - [X] Interactive analytics charts (Recharts) & Geospatial GIS maps (Google Maps)
     - [X] Full TypeScript interfaces, AuthContext, ToastContext, ProtectedRoute
     - [X] Verified zero-error production build (`npm run build`)
 [X] Complete Backend REST API & Database Specification (`docs/BACKEND_SPECIFICATION.md`)
+[X] Backend Authentication & Authorization Structure (`backend/`)
+    - [X] Mongoose User model with bcryptjs hashing & roles
+    - [X] JWT token generation & HTTP-only cookie mechanism
+    - [X] Auth middleware & Role-based Access Control (RBAC) middleware
+    - [X] Auth controller & auth routes (`/api/auth/register`, `/login`, `/logout`, `/me`, `/api/users/profile`)
+    - [X] Connected live MongoDB Atlas cluster
+[X] Frontend-Backend Integration & CORS Resolution
+    - [X] Configured `VITE_API_BASE_URL` in `frontend/.env`
+    - [X] Real API service calls in `authService.ts` & session verification in `AuthContext.tsx`
+[X] Google Maps GIS Integration & MongoDB Field Sector Persistence
+    - [X] Replaced Leaflet map on Field Sector page with Google Maps JavaScript API & Google Places Autocomplete
+    - [X] Draggable markers, reverse geocoding, GPS location, and InfoWindows
+    - [X] Mongoose Field model & `/api/fields` CRUD endpoints
+    - [X] Verified live frontend-backend-database field persistence
 
 Pending Objectives:
-[ ] Phase 4: Express.js Backend REST API & MongoDB Database Implementation
+[ ] Phase 4 (Contd.): Farm, Crop, Soil, Inventory, Worker, & Financial Express.js REST APIs
 [ ] Phase 5: Python FastAPI ML Microservice Implementation (Crop Rec, Yield, Disease Vision)
 [ ] Phase 6: Docker Compose Containerization & End-to-End Verification
 
@@ -72,5 +121,7 @@ Pending Objectives:
 - README.md: Full system overview, architecture diagrams, module list
 - CONTRIBUTING.md: Open source setup, branch naming, PR conventions
 - context.txt: History log, overall progress metrics, current status
+- backend/contextbackend.md: Detailed backend architecture log & API specs
+- backend/README.md: Backend setup, env config & Postman API testing guide
 - docs/BACKEND_SPECIFICATION.md: Single-file backend API endpoints & database schemas
 ================================================================================

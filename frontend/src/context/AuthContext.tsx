@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { User, UserRole } from '../types';
+import { authService } from '../services/authService';
 
 interface AuthContextType {
   user: User | null;
@@ -13,80 +14,82 @@ interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const MOCK_USER: User = {
-  id: 'usr-1',
-  name: 'Rohith S D',
-  email: 'rohith.manager@farm.agri',
-  role: 'Farm Manager',
-  farmName: 'Green Valley Agri Enterprise',
-  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80',
-};
-
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  // Restore & verify authentication on initial app load / reload
   useEffect(() => {
-    const savedToken = localStorage.getItem('prj533_token');
-    const savedUser = localStorage.getItem('prj533_user');
+    const initAuth = async () => {
+      const savedToken = localStorage.getItem('prj533_token');
 
-    if (savedToken && savedUser) {
-      setToken(savedToken);
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch {
-        setUser(MOCK_USER);
+      if (!savedToken) {
+        setToken(null);
+        setUser(null);
+        setIsLoading(false);
+        return;
       }
-    } else {
-      // Default to demo user for seamless evaluation
-      setToken('mock-jwt-token-prj533');
-      setUser(MOCK_USER);
-    }
-    setIsLoading(false);
+
+      try {
+        setToken(savedToken);
+        // Verify token & restore latest profile from backend GET /api/users/profile
+        const activeUser = await authService.getProfile();
+        setUser(activeUser);
+        localStorage.setItem('prj533_user', JSON.stringify(activeUser));
+      } catch {
+        // Token invalid, expired, or server user deactivated
+        localStorage.removeItem('prj533_token');
+        localStorage.removeItem('prj533_user');
+        setToken(null);
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initAuth();
   }, []);
 
-  const login = async (email: string): Promise<boolean> => {
+  const login = async (email: string, pass: string): Promise<boolean> => {
     setIsLoading(true);
-    // Simulate auth latency
-    await new Promise((res) => setTimeout(res, 800));
-
-    const loggedUser: User = {
-      ...MOCK_USER,
-      email: email || MOCK_USER.email,
-    };
-    const mockToken = `jwt-${Date.now()}`;
-
-    setToken(mockToken);
-    setUser(loggedUser);
-    localStorage.setItem('prj533_token', mockToken);
-    localStorage.setItem('prj533_user', JSON.stringify(loggedUser));
-    setIsLoading(false);
-    return true;
+    try {
+      const res = await authService.login(email, pass);
+      setToken(res.token);
+      setUser(res.user);
+      localStorage.setItem('prj533_token', res.token);
+      localStorage.setItem('prj533_user', JSON.stringify(res.user));
+      return true;
+    } catch (error) {
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const register = async (name: string, email: string, _pass: string, role: UserRole): Promise<boolean> => {
+  const register = async (
+    name: string,
+    email: string,
+    pass: string,
+    role: UserRole
+  ): Promise<boolean> => {
     setIsLoading(true);
-    await new Promise((res) => setTimeout(res, 800));
-
-    const newUsr: User = {
-      id: `usr-${Date.now()}`,
-      name,
-      email,
-      role,
-      farmName: 'Green Valley Agri Enterprise',
-    };
-    const mockToken = `jwt-${Date.now()}`;
-
-    setToken(mockToken);
-    setUser(newUsr);
-    localStorage.setItem('prj533_token', mockToken);
-    localStorage.setItem('prj533_user', JSON.stringify(newUsr));
-    setIsLoading(false);
-    return true;
+    try {
+      const res = await authService.register(name, email, pass, role);
+      setToken(res.token);
+      setUser(res.user);
+      localStorage.setItem('prj533_token', res.token);
+      localStorage.setItem('prj533_user', JSON.stringify(res.user));
+      return true;
+    } catch (error) {
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const logout = () => {
+    authService.logout();
     setUser(null);
     setToken(null);
     localStorage.removeItem('prj533_token');

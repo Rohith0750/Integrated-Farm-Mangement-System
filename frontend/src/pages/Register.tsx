@@ -36,8 +36,9 @@ export const Register: React.FC = () => {
     try {
       await register(fullName, email, password, role);
       navigate('/dashboard');
-    } catch {
-      setError('Failed to create account. Please try again.');
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'Failed to create account. Please try again.';
+      setError(msg);
     } finally {
       setIsSubmitting(false);
     }

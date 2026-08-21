@@ -331,4 +331,4 @@ If you have questions, encounter setup problems, or need guidance:
 - **Discussions**: Join the project discussions on GitHub.
 - **Maintainers**: Contact repository owner [@Rohith0750](https://github.com/Rohith0750).
 
-Thank you for helping build a better intelligent farm management system! 🌾🚜
+Thank you for helping build a better intelligent farm management system!

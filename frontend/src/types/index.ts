@@ -2,11 +2,15 @@ export type UserRole = 'Farm Manager' | 'Worker' | 'Agronomist' | 'Admin';
 
 export interface User {
   id: string;
+  _id?: string;
   name: string;
   email: string;
   role: UserRole;
   avatar?: string;
   farmName?: string;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Farm {
@@ -31,12 +35,19 @@ export interface SoilNPK {
 
 export interface Field {
   id: string;
+  _id?: string;
   farmId: string;
   farmName: string;
   name: string;
-  area: number; // in hectares
+  area: number; // in hectares or acres
+  areaUnit?: string;
   soilType: string;
   currentCrop: string;
+  irrigationType?: string;
+  sowingDate?: string;
+  expectedHarvestDate?: string;
+  notes?: string;
+  address?: string;
   status: 'Active' | 'Fallow' | 'Preparation' | 'Harvesting';
   lat: number;
   lng: number;
