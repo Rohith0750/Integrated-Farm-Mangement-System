@@ -7,6 +7,10 @@ const fieldSchema = new mongoose.Schema(
       ref: 'User',
       required: true
     },
+    farm: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Farm'
+    },
     name: {
       type: String,
       required: [true, 'Field sector name is required'],

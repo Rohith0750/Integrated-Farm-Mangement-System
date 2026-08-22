@@ -130,118 +130,89 @@ export const farmService = {
   getFarms: async (): Promise<Farm[]> => {
     try {
       const res = await api.get('/farms');
-      return res.data;
-    } catch {
-      return MOCK_FARMS;
+      if (Array.isArray(res.data)) {
+        return res.data.map((f: any) => ({
+          ...f,
+          id: f._id || f.id
+        }));
+      }
+      return [];
+    } catch (err) {
+      console.error('Failed to fetch farms from backend database:', err);
+      return [];
+    }
+  },
+
+  getFarmById: async (id: string): Promise<Farm | null> => {
+    try {
+      const res = await api.get(`/farms/${id}`);
+      return {
+        ...res.data,
+        id: res.data._id || res.data.id
+      };
+    } catch (err) {
+      console.error(`Failed to fetch farm ${id} from database:`, err);
+      return null;
     }
   },
 
   getFields: async (farmId?: string): Promise<Field[]> => {
     try {
       const res = await api.get('/fields', { params: { farmId } });
-      if (Array.isArray(res.data) && res.data.length > 0) {
+      if (Array.isArray(res.data)) {
         return res.data.map((f: any) => ({
           ...f,
           id: f._id || f.id
         }));
       }
-      return MOCK_FIELDS;
-    } catch {
-      if (farmId) return MOCK_FIELDS.filter((f) => f.farmId === farmId);
-      return MOCK_FIELDS;
+      return [];
+    } catch (err) {
+      console.error('Failed to fetch fields from backend database:', err);
+      return [];
     }
   },
 
   createFarm: async (farmData: Partial<Farm>): Promise<Farm> => {
-    try {
-      const res = await api.post('/farms', farmData);
-      return res.data;
-    } catch {
-      const newFarm: Farm = {
-        id: `farm-${Date.now()}`,
-        name: farmData.name || 'New Farm Estate',
-        location: farmData.location || 'Sector 1',
-        totalArea: farmData.totalArea || 10,
-        fieldCount: 0,
-        activeCrops: 0,
-        status: 'Active',
-        description: farmData.description || 'Newly added agricultural property.',
-        lat: farmData.lat || 12.9716,
-        lng: farmData.lng || 77.5946,
-        createdAt: new Date().toISOString().split('T')[0],
-      };
-      MOCK_FARMS.push(newFarm);
-      return newFarm;
-    }
+    const res = await api.post('/farms', farmData);
+    return {
+      ...res.data,
+      id: res.data._id || res.data.id
+    };
+  },
+
+  updateFarm: async (id: string, farmData: Partial<Farm>): Promise<Farm> => {
+    const res = await api.put(`/farms/${id}`, farmData);
+    return {
+      ...res.data,
+      id: res.data._id || res.data.id
+    };
   },
 
   createField: async (fieldData: Partial<Field>): Promise<Field> => {
-    try {
-      const res = await api.post('/fields', fieldData);
-      return {
-        ...res.data,
-        id: res.data._id || res.data.id
-      };
-    } catch {
-      const newField: Field = {
-        id: `fld-${Date.now()}`,
-        farmId: fieldData.farmId || 'farm-1',
-        farmName: fieldData.farmName || 'Green Valley Main Estate',
-        name: fieldData.name || 'New Field Sector',
-        area: fieldData.area || 5.0,
-        soilType: fieldData.soilType || 'Loamy Clay',
-        currentCrop: fieldData.currentCrop || 'None',
-        status: fieldData.status || 'Active',
-        lat: fieldData.lat || 12.9716,
-        lng: fieldData.lng || 77.5946,
-        soilHealthScore: 80,
-        npk: { nitrogen: 40, phosphorus: 35, potassium: 45 },
-        pH: 6.5,
-        moisture: 25,
-      };
-      MOCK_FIELDS.push(newField);
-      return newField;
-    }
+    const res = await api.post('/fields', fieldData);
+    return {
+      ...res.data,
+      id: res.data._id || res.data.id
+    };
   },
 
   updateField: async (id: string, fieldData: Partial<Field>): Promise<Field> => {
-    try {
-      const res = await api.put(`/fields/${id}`, fieldData);
-      return {
-        ...res.data,
-        id: res.data._id || res.data.id
-      };
-    } catch {
-      const idx = MOCK_FIELDS.findIndex((f) => f.id === id || f._id === id);
-      if (idx !== -1) {
-        MOCK_FIELDS[idx] = { ...MOCK_FIELDS[idx], ...fieldData };
-        return MOCK_FIELDS[idx];
-      }
-      return fieldData as Field;
-    }
+    const res = await api.put(`/fields/${id}`, fieldData);
+    return {
+      ...res.data,
+      id: res.data._id || res.data.id
+    };
   },
 
   deleteFarm: async (id: string): Promise<boolean> => {
-    try {
-      await api.delete(`/farms/${id}`);
-      return true;
-    } catch {
-      const idx = MOCK_FARMS.findIndex((f) => f.id === id);
-      if (idx !== -1) MOCK_FARMS.splice(idx, 1);
-      return true;
-    }
+    await api.delete(`/farms/${id}`);
+    return true;
   },
 
   deleteField: async (id: string): Promise<boolean> => {
-    try {
-      await api.delete(`/fields/${id}`);
-      const idx = MOCK_FIELDS.findIndex((f) => f.id === id || f._id === id);
-      if (idx !== -1) MOCK_FIELDS.splice(idx, 1);
-      return true;
-    } catch {
-      const idx = MOCK_FIELDS.findIndex((f) => f.id === id || f._id === id);
-      if (idx !== -1) MOCK_FIELDS.splice(idx, 1);
-      return true;
-    }
+    await api.delete(`/fields/${id}`);
+    return true;
   },
 };
+
+

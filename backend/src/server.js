@@ -11,6 +11,8 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const fieldRoutes = require('./routes/fieldRoutes');
+const farmRoutes = require('./routes/farmRoutes');
+const cropRoutes = require('./routes/cropRoutes');
 const errorHandler = require('./middleware/errorMiddleware');
 
 const app = express();
@@ -63,6 +65,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/fields', fieldRoutes);
 app.use('/api/field-sectors', fieldRoutes);
+app.use('/api/farms', farmRoutes);
+app.use('/api/crops', cropRoutes);
+
 
 // Centralized Error Handling Middleware
 app.use(errorHandler);

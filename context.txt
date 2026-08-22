@@ -4,7 +4,7 @@ INTEGRATED FARM MANAGEMENT SYSTEM (PRJ_533) - PROJECT CONTEXT & PROGRESS LOG
 Repository Name : Rohith0750/Integrated-Farm-Mangement-System
 Local Path      : C:\Users\Rohith S D\OneDrive\Documents\Farm Management
 Document Name   : context.txt
-Last Updated    : 2026-08-21
+Last Updated    : 2026-08-22
 
 --------------------------------------------------------------------------------
 1. EXECUTIVE SUMMARY & PROJECT GOAL
@@ -79,16 +79,31 @@ for farmers, farm managers, and agricultural advisors.
   - Connected `farmService.ts` to execute real CRUD operations (`GET`, `POST`, `PUT`, `DELETE`) against MongoDB Atlas.
   - Verified zero-error TypeScript build (`npm run build` PASS) and backend field CRUD tests PASS.
 
+• Milestone: Farm Model TypeScript Interface & MongoDB `_id` Alignment (2026-08-22):
+  - Updated `Farm` interface definition in `frontend/src/types/index.ts` to include optional `_id?: string` property.
+  - Added JSDoc context comments documenting MongoDB `_id` and normalized `id` model handling.
+  - Aligned `Farm` object model with MongoDB document ID semantics, matching `User` and `Field` type interfaces.
+  - Resolved TypeScript compiler errors (`Property '_id' does not exist on type 'Farm'`) across `Farms.tsx` (`farm.id || farm._id`).
+  - Verified zero-error TypeScript check (`npx tsc --noEmit -p tsconfig.app.json` PASS).
+
+• Milestone: End-to-End Crops Module Implementation (2026-08-22):
+  - Created Mongoose `Crop` model (`backend/src/models/Crop.js`) with ObjectId references (`user`, `farm`, `field`) and timestamps.
+  - Created `cropController.js` & `cropRoutes.js` mounted at `/api/crops` protected by `authMiddleware`.
+  - Enforced security validation: verifying `farm` and `field` belong to `req.user._id` and `field` belongs to selected `farm`.
+  - Updated `cropService.ts` to call real backend endpoints with zero mock fallbacks.
+  - Built dynamic Farm → Field cascaded selection UI in `Crops.tsx` along with edit modals, delete dialogs, and database table rendering.
+  - Verified zero-error TypeScript check (`npx tsc --noEmit -p tsconfig.app.json` PASS).
+
 --------------------------------------------------------------------------------
 3. CURRENT PROJECT PROGRESS & STATUS
 --------------------------------------------------------------------------------
-Overall Progress Status: Phase 1 (Architecture), Phase 2 (Governance), Phase 3 (Frontend App), Backend Specification, Backend Auth Foundation, Frontend Integration, and Google Maps GIS Persistence COMPLETE.
+Overall Progress Status: Phase 1 (Architecture), Phase 2 (Governance), Phase 3 (Frontend App), Backend Specification, Backend Auth Foundation, Frontend Integration, Google Maps GIS Persistence, TypeScript Interface Alignment, and Crops Module COMPLETE.
 
 Completed Objectives:
 [X] Project Vision & Problem Statement Definition
 [X] Multi-Tier System Architecture Design (React + Express + FastAPI + MongoDB)
 [X] Open-Source Developer Guidelines & Setup Documentation (CONTRIBUTING.md)
-[X] Complete Frontend Application (React + TypeScript + Vite + Tailwind CSS + Recharts + Leaflet)
+[X] Complete Frontend Application (React + TypeScript + Vite + Tailwind CSS + Recharts + Leaflet + Google Maps)
     - [X] All 16 Page views created & fully functional
     - [X] Explainable AI Decision Support Engine components (DecisionSupportCard)
     - [X] Interactive analytics charts (Recharts) & Geospatial GIS maps (Google Maps)
@@ -109,6 +124,13 @@ Completed Objectives:
     - [X] Draggable markers, reverse geocoding, GPS location, and InfoWindows
     - [X] Mongoose Field model & `/api/fields` CRUD endpoints
     - [X] Verified live frontend-backend-database field persistence
+[X] Farm Model TypeScript & MongoDB Identifier Alignment
+    - [X] Optional `_id?: string` added to `Farm` interface & documented via JSDoc in `frontend/src/types/index.ts`
+[X] End-to-End Crops Module & Database Relational Mapping
+    - [X] Mongoose Crop model & `/api/crops` endpoints with strict `User` -> `Farm` -> `Field` -> `Crop` validation
+    - [X] Dynamic Farm -> Field cascaded selection form UI in `Crops.tsx`
+    - [X] Zero mock fallback in `cropService.ts`
+    - [X] Clean compilation (`npx tsc --noEmit -p tsconfig.app.json` PASS)
 
 Pending Objectives:
 [ ] Phase 4 (Contd.): Farm, Crop, Soil, Inventory, Worker, & Financial Express.js REST APIs

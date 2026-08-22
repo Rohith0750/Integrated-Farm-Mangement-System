@@ -1,5 +1,9 @@
 export type UserRole = 'Farm Manager' | 'Worker' | 'Agronomist' | 'Admin';
 
+/**
+ * Represents a user account in the Farm Management System.
+ * Supports both normalized `id` and raw MongoDB document `_id`.
+ */
 export interface User {
   id: string;
   _id?: string;
@@ -13,8 +17,14 @@ export interface User {
   updatedAt?: string;
 }
 
+/**
+ * Represents a Farm entity.
+ * `id` is the primary normalized identifier used across frontend services.
+ * `_id` is an optional fallback for raw MongoDB document object returns.
+ */
 export interface Farm {
   id: string;
+  _id?: string;
   name: string;
   location: string;
   totalArea: number; // in hectares
@@ -61,15 +71,24 @@ export type GrowthStage = 'Planting' | 'Germination' | 'Vegetative' | 'Flowering
 
 export interface Crop {
   id: string;
+  _id?: string;
   name: string;
   variety: string;
-  fieldId: string;
-  fieldName: string;
-  plantingDate: string;
-  growthStage: GrowthStage;
-  expectedHarvest: string;
-  status: 'Healthy' | 'Needs Attention' | 'Critical Risk';
-  estimatedYieldTons: number;
+  farmId?: string;
+  farmName?: string;
+  fieldId?: string;
+  fieldName?: string;
+  farm?: string | { _id: string; name: string };
+  field?: string | { _id: string; name: string };
+  plantingDate?: string;
+  sowingDate?: string;
+  growthStage?: GrowthStage | string;
+  stage?: GrowthStage | string;
+  expectedHarvest?: string;
+  expectedHarvestDate?: string;
+  status?: 'Healthy' | 'Needs Attention' | 'Critical Risk' | 'At Risk' | 'Diseased' | string;
+  healthStatus?: string;
+  estimatedYieldTons?: number;
 }
 
 export interface SoilRecord {

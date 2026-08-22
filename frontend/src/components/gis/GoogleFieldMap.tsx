@@ -303,6 +303,21 @@ export const GoogleFieldMap: React.FC<GoogleFieldMapProps> = ({
     });
   };
 
+  // 4b. Re-center & place marker when activeLocation prop changes dynamically
+  useEffect(() => {
+    if (!map || !activeLocation || typeof window === 'undefined' || !(window as any).google) return;
+    const gObj = (window as any).google;
+    const { lat, lng } = activeLocation;
+    if (typeof lat === 'number' && typeof lng === 'number' && !isNaN(lat) && !isNaN(lng)) {
+      map.setCenter({ lat, lng });
+      map.setZoom(15);
+      reverseGeocode(lat, lng, gObj, (addr) => {
+        placeOrUpdateActiveMarker(lat, lng, addr, map, gObj);
+      });
+    }
+  }, [map, activeLocation?.lat, activeLocation?.lng]);
+
+
   // 5. Handle Map Click Event
   const handleMapClick = (
     lat: number,
