@@ -93,8 +93,11 @@ export interface Crop {
 
 export interface SoilRecord {
   id: string;
-  fieldId: string;
-  fieldName: string;
+  _id?: string;
+  fieldId?: string;
+  fieldName?: string;
+  farmName?: string;
+  field?: string | { _id: string; name: string; farmName?: string };
   date: string;
   nitrogen: number;
   phosphorus: number;
@@ -107,13 +110,51 @@ export interface SoilRecord {
 }
 
 export interface WeatherForecastDay {
-  day: string;
+  day?: string;
   date: string;
-  tempMax: number;
-  tempMin: number;
+  dateLabel?: string;
+  tempMax?: number;
+  maxTemperature?: number;
+  tempMin?: number;
+  minTemperature?: number;
+  precipitation?: number;
+  rainProb?: number;
+  rainProbability?: number;
+  windSpeed?: number;
+  weatherCode?: number;
   condition: string;
-  rainProb: number;
-  icon: string;
+  icon?: string;
+}
+
+export interface WeatherAdvisory {
+  type: 'IRRIGATION' | 'FERTILIZER' | 'SPRAYING' | 'HEAT_STRESS' | 'RAINFALL' | 'GENERAL' | string;
+  severity: 'HIGH' | 'MEDIUM' | 'LOW' | 'High' | 'Medium' | 'Low' | string;
+  title: string;
+  message: string;
+  reason?: string;
+}
+
+export interface WeatherRecordResponse {
+  farm: {
+    id: string;
+    name: string;
+    location: string;
+    latitude: number;
+    longitude: number;
+  };
+  current: {
+    temperature: number;
+    humidity: number;
+    precipitation: number;
+    windSpeed: number;
+    weatherCode: number;
+    condition: string;
+    icon?: string;
+    evapotranspiration?: number;
+  };
+  forecast: WeatherForecastDay[];
+  advisories: WeatherAdvisory[];
+  fetchedAt: string;
 }
 
 export interface WeatherRecord {
@@ -121,12 +162,13 @@ export interface WeatherRecord {
   humidity: number; // %
   windSpeed: number; // km/h
   rainfall: number; // mm
-  condition: 'Sunny' | 'Partly Cloudy' | 'Rainy' | 'Thunderstorm' | 'Windy';
+  condition: string;
   location: string;
   timestamp: string;
   forecast: WeatherForecastDay[];
+  advisories?: WeatherAdvisory[];
   alert?: {
-    severity: 'High' | 'Medium' | 'Low';
+    severity: 'High' | 'Medium' | 'Low' | string;
     message: string;
     action: string;
   };
@@ -136,6 +178,7 @@ export type InventoryCategory = 'Seeds' | 'Fertilizers' | 'Pesticides' | 'Tools'
 
 export interface InventoryItem {
   id: string;
+  _id?: string;
   name: string;
   category: InventoryCategory;
   quantity: number;
@@ -150,6 +193,7 @@ export type WorkerStatus = 'Available' | 'Working' | 'On Leave';
 
 export interface Worker {
   id: string;
+  _id?: string;
   name: string;
   role: string;
   assignedField: string;
@@ -165,6 +209,7 @@ export type ExpenseCategory = 'Seeds' | 'Fertilizer' | 'Labour' | 'Fuel' | 'Equi
 
 export interface Expense {
   id: string;
+  _id?: string;
   category: ExpenseCategory;
   description: string;
   amount: number;
@@ -176,6 +221,7 @@ export interface Expense {
 
 export interface Income {
   id: string;
+  _id?: string;
   cropName: string;
   buyer: string;
   amount: number;
@@ -186,13 +232,14 @@ export interface Income {
 
 export interface Harvest {
   id: string;
+  _id?: string;
   cropName: string;
   fieldName: string;
   harvestDate: string;
   predictedYieldTons: number;
   actualYieldTons: number;
   differencePercent: number;
-  qualityGrade: 'Grade A' | 'Grade B' | 'Grade C';
+  qualityGrade: 'Grade A' | 'Grade B' | 'Grade C' | 'Standard' | 'Premium' | string;
   storageLocation: string;
   revenue: number;
 }

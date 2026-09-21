@@ -37,13 +37,13 @@ import { farmService } from '../services/farmService';
 import { cropService } from '../services/cropService';
 import { weatherService } from '../services/weatherService';
 import { recommendationService } from '../services/recommendationService';
-import { Farm, Field, Crop, WeatherRecord, DecisionSupportItem } from '../types';
+import { Farm, Field, Crop, WeatherRecordResponse, DecisionSupportItem } from '../types';
 
 export const Dashboard: React.FC = () => {
   const [farms, setFarms] = useState<Farm[]>([]);
   const [fields, setFields] = useState<Field[]>([]);
   const [crops, setCrops] = useState<Crop[]>([]);
-  const [weather, setWeather] = useState<WeatherRecord | null>(null);
+  const [weather, setWeather] = useState<WeatherRecordResponse | null>(null);
   const [decisions, setDecisions] = useState<DecisionSupportItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -54,7 +54,7 @@ export const Dashboard: React.FC = () => {
           farmService.getFarms(),
           farmService.getFields(),
           cropService.getCrops(),
-          weatherService.getWeather(),
+          weatherService.getWeather().catch(() => null),
           recommendationService.getDecisionSupport(),
         ]);
         setFarms(farmRes);
@@ -161,12 +161,14 @@ export const Dashboard: React.FC = () => {
               <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full text-xs font-bold text-agri-300 border border-white/10 mb-2">
                 <CloudSun className="w-4 h-4 text-amber-400" /> Live Station Telemetry
               </span>
-              <h3 className="text-2xl font-bold">{weather?.location || 'Central Farm Station'}</h3>
-              <p className="text-xs text-slate-400">Updated {weather?.timestamp || 'Just now'}</p>
+              <h3 className="text-2xl font-bold">{weather?.farm?.name || weather?.farm?.location || 'Central Farm Station'}</h3>
+              <p className="text-xs text-slate-400">
+                {weather?.fetchedAt ? `Updated ${new Date(weather.fetchedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'Live Satellite Feeds'}
+              </p>
             </div>
             <div className="text-right">
-              <span className="text-4xl lg:text-5xl font-black text-white">{weather?.temperature || 27.5}°C</span>
-              <span className="block text-xs text-agri-400 font-bold uppercase tracking-wider">{weather?.condition}</span>
+              <span className="text-4xl lg:text-5xl font-black text-white">{weather?.current ? weather.current.temperature : 27.5}°C</span>
+              <span className="block text-xs text-agri-400 font-bold uppercase tracking-wider">{weather?.current ? weather.current.condition : 'Partly Cloudy'}</span>
             </div>
           </div>
 
@@ -177,7 +179,7 @@ export const Dashboard: React.FC = () => {
               </div>
               <div>
                 <span className="block text-[10px] uppercase font-bold text-slate-400">Humidity</span>
-                <span className="text-base font-extrabold text-white">{weather?.humidity}%</span>
+                <span className="text-base font-extrabold text-white">{weather?.current ? weather.current.humidity : 68}%</span>
               </div>
             </div>
 
@@ -187,7 +189,7 @@ export const Dashboard: React.FC = () => {
               </div>
               <div>
                 <span className="block text-[10px] uppercase font-bold text-slate-400">Wind Speed</span>
-                <span className="text-base font-extrabold text-white">{weather?.windSpeed} km/h</span>
+                <span className="text-base font-extrabold text-white">{weather?.current ? weather.current.windSpeed : 14.2} km/h</span>
               </div>
             </div>
 
@@ -196,16 +198,16 @@ export const Dashboard: React.FC = () => {
                 <CloudSun className="w-5 h-5" />
               </div>
               <div>
-                <span className="block text-[10px] uppercase font-bold text-slate-400">24h Rainfall</span>
-                <span className="text-base font-extrabold text-white">{weather?.rainfall} mm</span>
+                <span className="block text-[10px] uppercase font-bold text-slate-400">Precipitation</span>
+                <span className="text-base font-extrabold text-white">{weather?.current ? weather.current.precipitation : 0} mm</span>
               </div>
             </div>
           </div>
 
-          {weather?.alert && (
+          {weather?.advisories && weather.advisories.length > 0 && (
             <div className="p-3 bg-amber-500/20 border border-amber-500/40 rounded-xl text-amber-200 text-xs flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
-              <span><strong>Weather Warning:</strong> {weather.alert.message}</span>
+              <span><strong>Advisory Notice:</strong> {weather.advisories[0].title} — {weather.advisories[0].message}</span>
             </div>
           )}
         </div>

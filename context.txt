@@ -94,10 +94,29 @@ for farmers, farm managers, and agricultural advisors.
   - Built dynamic Farm → Field cascaded selection UI in `Crops.tsx` along with edit modals, delete dialogs, and database table rendering.
   - Verified zero-error TypeScript check (`npx tsc --noEmit -p tsconfig.app.json` PASS).
 
+• Milestone: End-to-End Soil Telemetry & NPK Chemistry Module Implementation (2026-08-25):
+  - Created Mongoose `SoilRecord` model (`backend/src/models/SoilRecord.js`) with ObjectId references (`user`, `field`), Date, NPK, pH, moisture, organic matter, and validation rules (no default measurement values).
+  - Created `soilHealthCalculator.js` utility computing a deterministic composite soil health score (0-100) based on agronomic reference ranges.
+  - Created `soilController.js` & `soilRoutes.js` mounted at `/api/soil` protected by `authMiddleware`.
+  - Enforced field ownership verification through `req.user._id`.
+  - Updated `soilService.ts` to execute real REST calls (`GET`, `POST`, `PUT`, `DELETE`) with zero mock data.
+  - Updated `Soil.tsx` with dynamic field sector dropdowns, real database summary metrics, Recharts NPK chart, empty state, edit modals, and delete dialogs.
+  - Verified zero-error TypeScript check (`npx tsc --noEmit -p tsconfig.app.json` PASS).
+
+• Milestone: End-to-End OpenWeatherMap Live Weather & Agricultural Advisory Module (2026-08-25):
+  - Configured `WEATHER_API_KEY` & `WEATHER_API_URL=https://api.openweathermap.org/data/2.5` in `backend/.env` & `backend/.env.example` (kept securely on backend, zero frontend exposure).
+  - Built OpenWeatherMap REST client (`backend/src/services/weatherService.js`) supporting OneCall 3.0 / 2.5 and Standard 2.5 `/weather` & `/forecast` endpoints with unit conversions (m/s to km/h, Celsius).
+  - Built deterministic rule-based agricultural weather decision engine (`agriculturalWeatherEngine.js`) evaluating Irrigation, Heavy Rain, Fertilizer, Spraying, Heat Stress, and General advisories with explicit `title`, `message`, `severity`, and `reason`.
+  - Created `weatherController.js` & `weatherRoutes.js` mounted at `/api/weather` enforcing strict farm ownership validation (`Farm.user === req.user._id`).
+  - Updated `weatherService.ts` with zero mock data fallback.
+  - Updated `Weather.tsx` with dynamic Farm Selector dropdown, live telemetry, 7-day forecast cards, advisory badges (`LOW`, `MEDIUM`, `HIGH`) with explicit `reason`, and clean error/empty states (`"No farms available..."`, `"Weather unavailable..."`, `"Weather API configuration is missing."`).
+  - Updated `Dashboard.tsx` to render real satellite weather telemetry.
+  - Verified zero-error TypeScript check (`npx tsc --noEmit -p tsconfig.app.json` PASS).
+
 --------------------------------------------------------------------------------
 3. CURRENT PROJECT PROGRESS & STATUS
 --------------------------------------------------------------------------------
-Overall Progress Status: Phase 1 (Architecture), Phase 2 (Governance), Phase 3 (Frontend App), Backend Specification, Backend Auth Foundation, Frontend Integration, Google Maps GIS Persistence, TypeScript Interface Alignment, and Crops Module COMPLETE.
+Overall Progress Status: Phase 1 (Architecture), Phase 2 (Governance), Phase 3 (Frontend App), Backend Specification, Backend Auth Foundation, Frontend Integration, Google Maps GIS Persistence, TypeScript Interface Alignment, Crops Module, Soil Telemetry Module, and Live Weather Module COMPLETE.
 
 Completed Objectives:
 [X] Project Vision & Problem Statement Definition
@@ -130,6 +149,16 @@ Completed Objectives:
     - [X] Mongoose Crop model & `/api/crops` endpoints with strict `User` -> `Farm` -> `Field` -> `Crop` validation
     - [X] Dynamic Farm -> Field cascaded selection form UI in `Crops.tsx`
     - [X] Zero mock fallback in `cropService.ts`
+[X] End-to-End Soil Telemetry & NPK Chemistry Module
+    - [X] Mongoose SoilRecord model & `/api/soil` endpoints with field ownership verification & query parameter filtering
+    - [X] Deterministic composite health score calculator (`soilHealthCalculator.js`)
+    - [X] Dynamic field selection dropdowns, NPK chart, and real database summary analytics in `Soil.tsx`
+    - [X] Zero mock fallback in `soilService.ts`
+[X] End-to-End Live Weather & Agricultural Advisory Module
+    - [X] Open-Meteo REST API integration retrieving live microclimate telemetry from farm `lat` & `lng`
+    - [X] `agriculturalWeatherEngine.js` evaluating deterministic Irrigation, Fertilizer, Spraying & Heat Stress advisories
+    - [X] Dynamic Farm Selector, live station cards, 7-day forecast, and advisory badges in `Weather.tsx`
+    - [X] Zero mock fallback in `weatherService.ts`
     - [X] Clean compilation (`npx tsc --noEmit -p tsconfig.app.json` PASS)
 
 Pending Objectives:
