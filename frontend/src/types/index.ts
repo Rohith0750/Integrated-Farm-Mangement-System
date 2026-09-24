@@ -271,13 +271,23 @@ export interface FertilizerRecommendationResult {
   recommendedTiming: string;
 }
 
+export interface TopPrediction {
+  disease: string;
+  display_name?: string;
+  confidence: number;
+}
+
 export interface DiseaseDetectionResult {
   diseaseName: string;
   confidence: number;
-  severity: 'Mild' | 'Moderate' | 'Severe';
+  severity: 'Mild' | 'Moderate' | 'Severe' | 'High' | 'Critical' | 'None' | string;
   description: string;
   recommendedAction: string;
   affectedField?: string;
+  success?: boolean;
+  disease?: string;
+  display_name?: string;
+  top_predictions?: TopPrediction[];
 }
 
 export type AlertPriority = 'High' | 'Medium' | 'Low';

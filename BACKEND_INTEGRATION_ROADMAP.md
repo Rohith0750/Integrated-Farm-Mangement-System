@@ -1,239 +1,126 @@
-# 🚜 Integrated Farm Management System - Real-Time Backend Integration Plan
+# 🚜 Integrated Farm Management System - Backend Integration & Operational Architecture Reference
 
-This roadmap provides a complete, step-by-step technical guide to connect your static frontend pages and components to a live, real-time Node.js + Express + MongoDB Atlas backend.
+This reference document provides a complete technical map of how the React + TypeScript frontend pages, Node.js + Express REST API backend, MongoDB Atlas database, and Python FastAPI ML microservice communicate in real-time.
 
 ---
 
 ## 📑 Table of Contents
 1. [Overview & Architecture](#-overview--architecture)
-2. [Step-by-Step Integration Matrix](#-step-by-step-integration-matrix)
-3. [Detailed Phase Breakdown](#-detailed-phase-breakdown)
-   - [Phase 1: Authentication & User Session](#phase-1-authentication--user-session)
-   - [Phase 2: Farms, Fields & GIS Map Integration](#phase-2-farms-fields--gis-map-integration)
-   - [Phase 3: Crop Management & Stage Tracking](#phase-3-crop-management--stage-tracking)
-   - [Phase 4: Real-Time Soil Sensor Telemetry (IoT)](#phase-4-real-time-soil-sensor-telemetry-iot)
-   - [Phase 5: Weather Service & Forecasting API](#phase-5-weather-service--forecasting-api)
-   - [Phase 6: Financial Ledger & Analytics](#phase-6-financial-ledger--analytics)
-   - [Phase 7: Inventory & Asset Management](#phase-7-inventory--asset-management)
-   - [Phase 8: Workers & Field Task Allocation](#phase-8-workers--field-task-allocation)
-   - [Phase 9: Real-Time Alerts & Notification Engine (WebSockets)](#phase-9-real-time-alerts--notification-engine-websockets)
-   - [Phase 10: AI Crop Recommendations & Leaf Disease Detection](#phase-10-ai-crop-recommendations--leaf-disease-detection)
-4. [How to Replace Static Mocks with Real APIs](#-how-to-replace-static-mocks-with-real-apis)
-5. [Recommended Execution Order](#-recommended-execution-order)
+2. [End-to-End Integration Matrix](#-end-to-end-integration-matrix)
+3. [Module-by-Module Integration Architecture](#-module-by-module-integration-architecture)
+   - [Phase 1: Authentication & User Sessions](#phase-1-authentication--user-sessions)
+   - [Phase 2: Farms, Fields & Google Maps GIS](#phase-2-farms-fields--google-maps-gis)
+   - [Phase 3: Crop Cycle Management](#phase-3-crop-cycle-management)
+   - [Phase 4: Soil Chemistry Telemetry](#phase-4-soil-chemistry-telemetry)
+   - [Phase 5: OpenWeatherMap Weather Microclimate & Advisories](#phase-5-openopenweathermap-weather-microclimate--advisories)
+   - [Phase 6: Financial Ledger & Profitability](#phase-6-financial-ledger--profitability)
+   - [Phase 7: Inventory & Stock Management](#phase-7-inventory--stock-management)
+   - [Phase 8: Workers & Task Allocation](#phase-8-workers--task-allocation)
+   - [Phase 9: Harvest Logging & Quality Grading](#phase-9-harvest-logging--quality-grading)
+   - [Phase 10: AI Crop Recommendations & PyTorch Leaf Disease Vision](#phase-10-ai-crop-recommendations--pytorch-leaf-disease-vision)
+4. [How to Run the Integrated System](#-how-to-run-the-integrated-system)
 
 ---
 
 ## 🏗️ Overview & Architecture
 
 ### Tech Stack
-- **Frontend**: React + TypeScript + Vite + Tailwind CSS + Axios + Socket.io-client
-- **Backend**: Node.js + Express.js + Mongoose + MongoDB Atlas + JWT + Socket.io
-- **Geospatial & IoT**: Google Maps API + GeoJSON + Real-Time Sensor Telemetry
+- **Frontend**: React 19 + TypeScript + Vite + Tailwind CSS v4 + Axios + Google Maps JS API + Recharts
+- **Backend**: Node.js + Express.js + Mongoose + MongoDB Atlas + JWT + bcryptjs + cookie-parser
+- **ML Microservice**: Python 3.10+ + FastAPI + Uvicorn + PyTorch + Torchvision + Pydantic
 
 ### Data Flow Pattern
-```
-[ Frontend Page ] ──> [ Service (e.g. farmService.ts) ] ──> [ Axios (api.ts) ]
-                                                                   │
-                                                           HTTP Request with JWT
-                                                                   ▼
-[ Socket.io / Push Alerts ] <── [ Express Route & Controller ] <── [ MongoDB Atlas ]
+```text
+[ React Frontend Page ] ──> [ Service (e.g. farmService.ts) ] ──> [ Axios (api.ts) ]
+                                                                        │
+                                                              HTTP / REST with JWT Header/Cookie
+                                                                        ▼
+[ Express Router ] ──> [ Controller Logic ] ──> [ MongoDB Atlas Mongoose Model ]
+        │
+        └──────> [ FastAPI ML Proxy / Weather API ] ──> [ Synthesized Directives ]
 ```
 
 ---
 
-## 📊 Step-by-Step Integration Matrix
+## 📊 End-to-End Integration Matrix
 
 | Module | Frontend File | Service File | Backend Route | Backend Controller | Database Model | Status |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Auth** | `Login.tsx`, `Register.tsx` | `authService.ts` | `/api/auth` | `authController.js` | `User.js` | ✅ Connected |
-| **Fields / GIS** | `Fields.tsx` | `farmService.ts` | `/api/fields` | `fieldController.js` | `Field.js` | ✅ Connected |
-| **Farms** | `Farms.tsx` | `farmService.ts` | `/api/farms` | `farmController.js` | `Farm.js` (Pending) | 🟡 Needs API |
-| **Crops** | `Crops.tsx` | `cropService.ts` | `/api/crops` | `cropController.js` | `Crop.js` (Pending) | 🟡 Needs API |
-| **Soil & IoT** | `Soil.tsx` | `soilService.ts` | `/api/soil` | `soilController.js` | `SoilLog.js` (Pending) | 🟡 Needs API |
-| **Weather** | `Weather.tsx` | `weatherService.ts` | `/api/weather` | `weatherController.js` | OpenWeather API | 🟡 Needs API |
-| **Finance** | `Finance.tsx` | `financeService.ts` | `/api/finance` | `financeController.js` | `Transaction.js` | 🟡 Needs API |
-| **Inventory** | `Inventory.tsx` | `inventoryService.ts` | `/api/inventory` | `inventoryController.js` | `Inventory.js` | 🟡 Needs API |
-| **Workers** | `Workers.tsx` | `workerService.ts` | `/api/workers` | `workerController.js` | `Worker.js`, `Task.js` | 🟡 Needs API |
-| **Alerts** | `Alerts.tsx` | `alertService.ts` | `/api/alerts` | `alertController.js` | `Alert.js` + Sockets | 🔴 WebSockets |
-| **AI Insights** | `AIRecommendations.tsx` | `recommendationService.ts` | `/api/ai` | `aiController.js` | ML / Gemini Model | 🟡 Needs API |
+| :--- | :--- | :--- | :--- | :--- | :--- | :---: |
+| **Auth** | `Login.tsx`, `Register.tsx` | `authService.ts` | `/api/auth/*` | `authController.js` | `User.js` | ✅ Connected |
+| **User Profile**| Profile View | `authService.ts` | `/api/users/profile` | `userController.js` | `User.js` | ✅ Connected |
+| **Farms** | `Farms.tsx` | `farmService.ts` | `/api/farms` | `farmController.js` | `Farm.js` | ✅ Connected |
+| **Fields / GIS**| `Fields.tsx` | `farmService.ts` | `/api/fields` | `fieldController.js` | `Field.js` | ✅ Connected |
+| **Crops** | `Crops.tsx` | `cropService.ts` | `/api/crops` | `cropController.js` | `Crop.js` | ✅ Connected |
+| **Soil Telemetry**| `Soil.tsx` | `soilService.ts` | `/api/soil` | `soilController.js` | `SoilRecord.js` | ✅ Connected |
+| **Weather** | `Weather.tsx` | `weatherService.ts` | `/api/weather` | `weatherController.js` | OpenWeather API | ✅ Connected |
+| **Inventory** | `Inventory.tsx` | `inventoryService.ts` | `/api/inventory` | `inventoryController.js` | `Inventory.js` | ✅ Connected |
+| **Workers** | `Workers.tsx` | `workerService.ts` | `/api/workers` | `workerController.js` | `Worker.js` | ✅ Connected |
+| **Finance** | `Finance.tsx` | `financeService.ts` | `/api/finance/*` | `financeController.js` | `Income.js`, `Expense.js` | ✅ Connected |
+| **Harvest** | `Harvest.tsx` | `harvestService.ts` | `/api/harvests` | `harvestController.js` | `Harvest.js` | ✅ Connected |
+| **AI Predictions**| `AIRecommendations.tsx`, `DiseaseDetection.tsx` | `predictionService.ts` | `/api/predictions/*` | `predictionController.js` | FastAPI / PyTorch | ✅ Connected |
 
 ---
 
-## 🛠️ Detailed Phase Breakdown
+## 🛠️ Module-by-Module Integration Architecture
 
-### Phase 1: Authentication & User Session
-- **Objective**: Authenticate users, issue JWT token, and protect routes.
-- **What to do**:
-  1. **Backend**: Routes `/api/auth/register`, `/api/auth/login`, and `/api/auth/me`.
-  2. **Frontend**: Store JWT in `localStorage.setItem('prj533_token', token)`.
-  3. **Verification**: Verify token automatic injection via `api.ts` Axios request interceptor.
+### Phase 1: Authentication & User Sessions
+- **Endpoints**: `/api/auth/register`, `/api/auth/login`, `/api/auth/logout`, `/api/users/profile`.
+- **Flow**: User inputs credentials $\rightarrow$ Express validates and compares hash via `bcryptjs` $\rightarrow$ Signs JWT payload with `userId` and `role` $\rightarrow$ Sets HTTP-only cookie + returns Bearer token header $\rightarrow$ React `AuthContext` restores active session on page reload.
 
----
+### Phase 2: Farms, Fields & Google Maps GIS
+- **Endpoints**: `/api/farms`, `/api/fields`.
+- **Flow**: `Fields.tsx` renders `@googlemaps/js-api-loader` $\rightarrow$ User searches city via Google Places Autocomplete or drags marker $\rightarrow$ Geocodes address to Lat/Lng coordinates $\rightarrow$ Saves field boundaries to MongoDB Atlas `fields` collection.
 
-### Phase 2: Farms, Fields & GIS Map Integration
-- **Objective**: Manage physical farms, boundaries, and Google Map coordinates in real-time.
-- **Backend Tasks**:
-  - Create `backend/src/models/Farm.js`:
-    ```javascript
-    const farmSchema = new mongoose.Schema({
-      user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-      name: { type: String, required: true },
-      location: String,
-      totalArea: Number,
-      lat: Number,
-      lng: Number,
-      status: { type: String, enum: ['Active', 'Under Maintenance', 'Inactive'], default: 'Active' }
-    }, { timestamps: true });
-    ```
-  - Create `farmController.js` (`getFarms`, `createFarm`, `updateFarm`, `deleteFarm`).
-  - Register `/api/farms` in `backend/src/server.js`.
-- **Frontend Tasks**:
-  - In `frontend/src/services/farmService.ts`, connect `getFarms()` to `api.get('/farms')`.
-  - In `frontend/src/pages/Fields.tsx`, load real coordinates into `<GoogleFieldMap />`.
+### Phase 3: Crop Cycle Management
+- **Endpoints**: `/api/crops`.
+- **Flow**: `Crops.tsx` populates cascading Farm $\rightarrow$ Field dropdowns $\rightarrow$ User creates crop cycle $\rightarrow$ Backend enforces relational validation (`User` owns `Farm` and `Farm` owns `Field`).
 
----
+### Phase 4: Soil Chemistry Telemetry
+- **Endpoints**: `/api/soil`.
+- **Flow**: User logs NPK, pH, and moisture parameters $\rightarrow$ Backend executes `soilHealthCalculator.js` computing deterministic 0-100 score $\rightarrow$ React renders trend lines on Recharts bar graphs.
 
-### Phase 3: Crop Management & Stage Tracking
-- **Objective**: Track planted crops, sowing dates, growth stages, and estimated harvest.
-- **Backend Tasks**:
-  - Create `backend/src/models/Crop.js` (name, variety, fieldId, sowingDate, expectedHarvest, stage, healthStatus).
-  - Create `backend/src/routes/cropRoutes.js` and `cropController.js`.
-- **Frontend Tasks**:
-  - Update `frontend/src/services/cropService.ts` to call `/api/crops`.
-  - Wire `frontend/src/pages/Crops.tsx` to handle adding crops and updating growth progress.
+### Phase 5: OpenWeatherMap Weather Microclimate & Advisories
+- **Endpoints**: `/api/weather/:farmId`.
+- **Flow**: Backend queries farm coordinates $\rightarrow$ Fetches OpenWeatherMap / Open-Meteo REST API $\rightarrow$ Executes `agriculturalWeatherEngine.js` evaluating rules (e.g., Delay Irrigation if precipitation $>20\text{mm}$) $\rightarrow$ Frontend displays 7-day forecast & advisory badges.
 
----
+### Phase 6: Financial Ledger & Profitability
+- **Endpoints**: `/api/finance/income`, `/api/finance/expense`, `/api/finance/summary`.
+- **Flow**: Logs revenues and operational expenditures $\rightarrow$ Backend calculates net profit (`Total Income - Total Expenses`) per farm $\rightarrow$ Recharts pie charts visualize spending breakdown.
 
-### Phase 4: Real-Time Soil Sensor Telemetry (IoT)
-- **Objective**: Store and stream live NPK, pH, moisture, and temperature readings.
-- **Backend Tasks**:
-  - Create `backend/src/models/SoilLog.js` (fieldId, npk: { nitrogen, phosphorus, potassium }, pH, moisture, temperature, recordedAt).
-  - Add route `/api/soil/latest/:fieldId` and `/api/soil/history/:fieldId`.
-  - Optional IoT simulation: Add a cron job or interval in backend `server.js` that emits random sensor ticks to connected clients via Socket.io.
-- **Frontend Tasks**:
-  - Update `frontend/src/pages/Soil.tsx` to display real line charts and gauge components using telemetry logs.
+### Phase 7: Inventory & Stock Management
+- **Endpoints**: `/api/inventory`.
+- **Flow**: Tracks stocks of seeds, fertilizers, pesticides, and tools $\rightarrow$ Highlights low-stock badges when `quantity <= minThreshold`.
+
+### Phase 8: Workers & Task Allocation
+- **Endpoints**: `/api/workers`.
+- **Flow**: Directory of farm workers linked to field sectors with daily wage rates and active shift statuses.
+
+### Phase 9: Harvest Logging & Quality Grading
+- **Endpoints**: `/api/harvests`.
+- **Flow**: Logs yield output volume (kg/tons) and quality grades (Grade A/B/C) linked to specific crop cycles.
+
+### Phase 10: AI Crop Recommendations & PyTorch Leaf Disease Vision
+- **Endpoints**: `/api/predictions/crop`, `/api/predictions/disease`.
+- **Flow**: Leaf image uploaded via `DiseaseDetection.tsx` $\rightarrow$ Express proxies image payload to Python FastAPI ML microservice on port 8000 $\rightarrow$ PyTorch CNN executes inference against `best_tomato_disease_model.pth` $\rightarrow$ Returns diagnosis, confidence score, and treatment plan.
 
 ---
 
-### Phase 5: Weather Service & Forecasting API
-- **Objective**: Fetch real-time weather forecasts based on farm GPS coordinates.
-- **Backend Tasks**:
-  - Create `backend/src/controllers/weatherController.js` to query OpenWeatherMap / WeatherAPI using `process.env.WEATHER_API_KEY`.
-  - Route: `GET /api/weather?lat=12.9716&lng=77.5946`.
-- **Frontend Tasks**:
-  - Connect `frontend/src/services/weatherService.ts` to `/api/weather`.
+## 🚀 How to Run the Integrated System
 
----
+Launch all services concurrently in separate terminal instances:
 
-### Phase 6: Financial Ledger & Analytics
-- **Objective**: Track income (harvest sales) and expenses (seeds, fertilizer, labor, equipment).
-- **Backend Tasks**:
-  - Create `backend/src/models/Transaction.js` (type: 'Income'|'Expense', amount, category, date, description, fieldId).
-  - Create `backend/src/controllers/financeController.js` returning monthly aggregations.
-- **Frontend Tasks**:
-  - Connect `frontend/src/pages/Finance.tsx` to `/api/finance/summary` and `/api/finance/transactions`.
+```bash
+# Terminal 1 - Express REST API Backend
+cd backend
+npm run dev
 
----
+# Terminal 2 - Python FastAPI ML Microservice
+cd ml-service
+python run.py
 
-### Phase 7: Inventory & Asset Management
-- **Objective**: Track fertilizers, pesticides, tools, and seeds with low-stock alerts.
-- **Backend Tasks**:
-  - Create `backend/src/models/Inventory.js` (itemName, category, quantity, unit, reorderThreshold, unitPrice).
-  - Create `/api/inventory` CRUD endpoints.
-- **Frontend Tasks**:
-  - Wire `frontend/src/pages/Inventory.tsx` with modal dialogs to perform real stock additions and deductions.
-
----
-
-### Phase 8: Workers & Field Task Allocation
-- **Objective**: Assign farm workers to fields and track task completion statuses.
-- **Backend Tasks**:
-  - Create `Worker.js` and `Task.js` models.
-  - Endpoints `/api/workers` and `/api/tasks`.
-- **Frontend Tasks**:
-  - Wire `frontend/src/pages/Workers.tsx` to create and complete assigned field tasks.
-
----
-
-### Phase 9: Real-Time Alerts & Notification Engine (WebSockets)
-- **Objective**: Immediately notify farmers when soil moisture is critical, weather alerts strike, or stock is low.
-- **Backend Tasks**:
-  - Integrate `socket.io` in `backend/src/server.js`:
-    ```javascript
-    const http = require('http');
-    const { Server } = require('socket.io');
-    const server = http.createServer(app);
-    const io = new Server(server, { cors: corsOptions });
-
-    io.on('connection', (socket) => {
-      console.log('Client connected:', socket.id);
-    });
-
-    // Make io accessible in controllers via req.app.get('io')
-    app.set('io', io);
-    ```
-  - Emit alert event on threshold breach: `req.app.get('io').emit('alert:new', alertData)`.
-- **Frontend Tasks**:
-  - Subscribe in frontend `Alerts.tsx`:
-    ```typescript
-    import { io } from 'socket.io-client';
-    const socket = io('http://localhost:5000');
-    socket.on('alert:new', (newAlert) => setAlerts(prev => [newAlert, ...prev]));
-    ```
-
----
-
-### Phase 10: AI Crop Recommendations & Leaf Disease Detection
-- **Objective**: Provide ML/AI-powered insights for crop health and disease identification.
-- **Backend Tasks**:
-  - Add `/api/ai/recommendations` querying soil + weather data to generate AI tips.
-  - Add `/api/ai/detect-disease` accepting leaf image uploads via `multer`.
-- **Frontend Tasks**:
-  - Connect `AIRecommendations.tsx` and `DiseaseDetection.tsx` to backend AI endpoints.
-
----
-
-## ⚡ How to Replace Static Mocks with Real APIs
-
-Currently, service files like `farmService.ts` have fallback code:
-```typescript
-// BEFORE (Mock Fallback Pattern):
-getFields: async (): Promise<Field[]> => {
-  try {
-    const res = await api.get('/fields');
-    return res.data;
-  } catch {
-    return MOCK_FIELDS; // <--- MOCK DATA FALLBACK
-  }
-}
+# Terminal 3 - React 19 Frontend Client
+cd frontend
+npm run dev
 ```
 
-To convert to **Pure Real Data Mode**:
-1. Remove `catch { return MOCK_FIELDS; }`.
-2. Throw errors so the UI displays actual server status or error toasts:
-```typescript
-// AFTER (Pure Real Data Pattern):
-getFields: async (): Promise<Field[]> => {
-  const res = await api.get('/fields');
-  return res.data;
-}
-```
-
----
-
-## 🚀 Recommended Execution Order
-
-Follow this exact sequence to connect everything step-by-step:
-
-1. **Step 1**: Build `Farm.js` model & `farmController.js` in backend -> Connect `Farms.tsx`.
-2. **Step 2**: Build `Crop.js` model & `cropController.js` in backend -> Connect `Crops.tsx`.
-3. **Step 3**: Build `SoilLog.js` model & `soilController.js` in backend -> Connect `Soil.tsx`.
-4. **Step 4**: Build `Transaction.js` model & `financeController.js` in backend -> Connect `Finance.tsx`.
-5. **Step 5**: Build `Inventory.js` model & `inventoryController.js` in backend -> Connect `Inventory.tsx`.
-6. **Step 6**: Build `Worker.js` and `Task.js` models in backend -> Connect `Workers.tsx`.
-7. **Step 7**: Configure OpenWeather API proxy route -> Connect `Weather.tsx`.
-8. **Step 8**: Add `Socket.io` server to `backend/src/server.js` -> Connect `Alerts.tsx` for real-time notifications.
-9. **Step 9**: Connect AI & Disease Detection controllers -> Connect `AIRecommendations.tsx`.
-
----
-*Created for Integrated Farm Management System.*
+Access the client application at **`http://localhost:5173`**.

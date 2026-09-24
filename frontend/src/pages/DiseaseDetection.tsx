@@ -165,6 +165,26 @@ export const DiseaseDetection: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Top 3 Predictions Breakdown */}
+                {result.top_predictions && result.top_predictions.length > 0 && (
+                  <div className="p-4 bg-white/5 rounded-2xl border border-white/10 text-xs space-y-2">
+                    <strong className="text-white block mb-1">Top Predictions Breakdown:</strong>
+                    <div className="space-y-1.5">
+                      {result.top_predictions.map((pred, idx) => (
+                        <div key={idx} className="flex items-center justify-between text-slate-300">
+                          <span className="font-medium text-slate-200">{pred.display_name || pred.disease}</span>
+                          <div className="flex items-center gap-2">
+                            <div className="w-20 bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                              <div className="bg-agri-400 h-1.5 rounded-full" style={{ width: `${Math.min(100, pred.confidence)}%` }}></div>
+                            </div>
+                            <span className="font-mono text-xs font-bold text-white w-10 text-right">{pred.confidence}%</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="p-4 bg-white/5 rounded-2xl border border-white/10 text-xs leading-relaxed text-slate-300">
                   <strong className="text-white block mb-1">Pathology Description:</strong>
                   {result.description}
@@ -190,8 +210,8 @@ export const DiseaseDetection: React.FC = () => {
           </div>
 
           <div className="pt-4 border-t border-slate-800 text-[11px] text-slate-500 flex items-center justify-between">
-            <span>PyTorch ResNet-50 Vision Backbone</span>
-            <span>Dataset: PlantVillage 54k classes</span>
+            <span>PyTorch EfficientNet-B0 Vision Backbone</span>
+            <span>Dataset: Tomato Disease 10 Classes</span>
           </div>
         </div>
       </div>

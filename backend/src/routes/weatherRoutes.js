@@ -9,4 +9,7 @@ router.use(protect);
 router.route('/')
   .get(getWeather);
 
+router.route('/:farmId')
+  .get(getWeather);
+
 module.exports = router;

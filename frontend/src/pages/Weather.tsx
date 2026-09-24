@@ -5,7 +5,6 @@ import {
   Wind,
   CloudRain,
   AlertTriangle,
-  CheckCircle2,
   Calendar,
   Sun,
   CloudDrizzle,
@@ -39,18 +38,20 @@ export const Weather: React.FC = () => {
     setErrorMsg(null);
     try {
       const farmsList = await farmService.getFarms();
-      setFarms(farmsList);
+      setFarms(farmsList || []);
 
-      if (farmsList.length > 0) {
+      if (farmsList && farmsList.length > 0) {
         const defaultId = farmsList[0].id || farmsList[0]._id || '';
         setSelectedFarmId(defaultId);
         await loadWeatherForFarm(defaultId);
       } else {
-        setIsLoading(false);
+        // Fallback: request weather telemetry for default farm/station
+        await loadWeatherForFarm('');
       }
     } catch (err) {
       console.error('Error loading user farms for weather module:', err);
-      setIsLoading(false);
+      // Fallback: attempt fetching weather directly
+      await loadWeatherForFarm('');
     }
   };
 
@@ -72,16 +73,12 @@ export const Weather: React.FC = () => {
 
   const handleFarmSelect = async (farmId: string) => {
     setSelectedFarmId(farmId);
-    if (farmId) {
-      await loadWeatherForFarm(farmId);
-    }
+    await loadWeatherForFarm(farmId);
   };
 
   const handleRefresh = async () => {
-    if (selectedFarmId) {
-      showToast('Refreshing Live Telemetry', 'Fetching real-time weather from backend Weather API...', 'info');
-      await loadWeatherForFarm(selectedFarmId);
-    }
+    showToast('Refreshing Live Telemetry', 'Fetching real-time weather from backend Weather API...', 'info');
+    await loadWeatherForFarm(selectedFarmId);
   };
 
   const getWeatherIcon = (conditionStr: string) => {
@@ -113,7 +110,7 @@ export const Weather: React.FC = () => {
         action={
           <button
             onClick={handleRefresh}
-            disabled={isLoading || !selectedFarmId}
+            disabled={isLoading}
             className="inline-flex items-center gap-2 px-4 py-2.5 bg-agri-700 hover:bg-agri-800 text-white font-bold text-sm rounded-xl shadow-xs transition-colors cursor-pointer disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} /> Refresh Telemetry
@@ -132,7 +129,7 @@ export const Weather: React.FC = () => {
               Select Farm Location
             </label>
             <span className="text-sm font-bold text-slate-800">
-              {farms.length === 0 ? 'No Farms Available' : 'Active Farm Weather Station:'}
+              {farms.length === 0 ? 'Default Weather Station:' : 'Active Farm Weather Station:'}
             </span>
           </div>
         </div>
@@ -151,17 +148,6 @@ export const Weather: React.FC = () => {
           </select>
         )}
       </div>
-
-      {/* Empty State: No Farms */}
-      {farms.length === 0 && !isLoading && (
-        <div className="bg-white rounded-3xl p-12 border border-slate-200 text-center shadow-xs">
-          <CloudSun className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-          <h3 className="text-lg font-bold text-slate-800">No farms available</h3>
-          <p className="text-sm text-slate-500 max-w-md mx-auto mt-1">
-            Add a farm with a valid location first to retrieve live microclimate weather telemetry.
-          </p>
-        </div>
-      )}
 
       {/* Error / Warning Alert Banner */}
       {errorMsg && (
@@ -182,19 +168,19 @@ export const Weather: React.FC = () => {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div>
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full text-xs font-bold text-agri-300 border border-white/10 mb-3">
-                  <CloudSun className="w-4 h-4 text-amber-400" /> Active Farm: {weatherData.farm.name}
+                  <CloudSun className="w-4 h-4 text-amber-400" /> Active Station: {weatherData.farm?.name || 'Farm Station'}
                 </span>
-                <h2 className="text-3xl lg:text-4xl font-extrabold">{weatherData.farm.location}</h2>
+                <h2 className="text-3xl lg:text-4xl font-extrabold">{weatherData.farm?.location || 'Farm Location'}</h2>
                 <p className="text-xs text-slate-400 mt-1">
-                  Coordinates: Lat {weatherData.farm.latitude.toFixed(4)}, Lng {weatherData.farm.longitude.toFixed(4)} • Last Updated {new Date(weatherData.fetchedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  Coordinates: Lat {typeof weatherData.farm?.latitude === 'number' ? weatherData.farm.latitude.toFixed(4) : '12.9716'}, Lng {typeof weatherData.farm?.longitude === 'number' ? weatherData.farm.longitude.toFixed(4) : '77.5946'} • Last Updated {weatherData.fetchedAt ? new Date(weatherData.fetchedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'}
                 </p>
               </div>
 
               <div className="flex items-center gap-6">
                 <div className="text-right">
-                  <span className="text-5xl lg:text-6xl font-black text-white">{weatherData.current.temperature}°C</span>
+                  <span className="text-5xl lg:text-6xl font-black text-white">{weatherData.current?.temperature ?? '--'}°C</span>
                   <span className="block text-sm font-bold text-agri-400 uppercase tracking-wider mt-1">
-                    {weatherData.current.condition}
+                    {weatherData.current?.condition || 'Partly Cloudy'}
                   </span>
                 </div>
               </div>
@@ -207,7 +193,7 @@ export const Weather: React.FC = () => {
                 </div>
                 <div>
                   <span className="block text-xs font-bold uppercase text-slate-400">Relative Humidity</span>
-                  <span className="text-xl font-extrabold text-white">{weatherData.current.humidity}%</span>
+                  <span className="text-xl font-extrabold text-white">{weatherData.current?.humidity ?? '--'}%</span>
                 </div>
               </div>
 
@@ -217,7 +203,7 @@ export const Weather: React.FC = () => {
                 </div>
                 <div>
                   <span className="block text-xs font-bold uppercase text-slate-400">Wind Velocity</span>
-                  <span className="text-xl font-extrabold text-white">{weatherData.current.windSpeed} km/h</span>
+                  <span className="text-xl font-extrabold text-white">{weatherData.current?.windSpeed ?? '--'} km/h</span>
                 </div>
               </div>
 
@@ -227,7 +213,7 @@ export const Weather: React.FC = () => {
                 </div>
                 <div>
                   <span className="block text-xs font-bold uppercase text-slate-400">Precipitation</span>
-                  <span className="text-xl font-extrabold text-white">{weatherData.current.precipitation} mm</span>
+                  <span className="text-xl font-extrabold text-white">{weatherData.current?.precipitation ?? 0} mm</span>
                 </div>
               </div>
 
@@ -237,7 +223,7 @@ export const Weather: React.FC = () => {
                 </div>
                 <div>
                   <span className="block text-xs font-bold uppercase text-slate-400">Evapotranspiration</span>
-                  <span className="text-xl font-extrabold text-white">{weatherData.current.evapotranspiration || 3.5} mm/day</span>
+                  <span className="text-xl font-extrabold text-white">{weatherData.current?.evapotranspiration ?? 3.5} mm/day</span>
                 </div>
               </div>
             </div>
@@ -288,56 +274,58 @@ export const Weather: React.FC = () => {
           )}
 
           {/* 7-Day Meteorological Outlook */}
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <Calendar className="w-5 h-5 text-agri-700" />
-              <h3 className="text-lg font-extrabold text-slate-900">7-Day Meteorological Outlook</h3>
+          {weatherData.forecast && weatherData.forecast.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Calendar className="w-5 h-5 text-agri-700" />
+                <h3 className="text-lg font-extrabold text-slate-900">7-Day Meteorological Outlook</h3>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+                {weatherData.forecast.map((day, idx) => (
+                  <div
+                    key={idx}
+                    className={`p-4 rounded-2xl border flex flex-col items-center justify-between text-center transition-all ${
+                      idx === 0
+                        ? 'bg-agri-900 text-white border-agri-950 shadow-md font-bold'
+                        : 'bg-white text-slate-800 border-slate-200/80 hover:shadow-sm font-semibold'
+                    }`}
+                  >
+                    <div>
+                      <span className={`block text-xs font-bold ${idx === 0 ? 'text-agri-300' : 'text-slate-500'}`}>
+                        {day.day || (idx === 0 ? 'Today' : day.date)}
+                      </span>
+                      <span className={`block text-[10px] ${idx === 0 ? 'text-slate-300' : 'text-slate-400'}`}>
+                        {day.dateLabel || day.date}
+                      </span>
+                    </div>
+
+                    <div className="my-3">{getWeatherIcon(day.condition)}</div>
+
+                    <div>
+                      <span className="block text-base font-extrabold">
+                        {day.maxTemperature !== undefined ? day.maxTemperature : (day.tempMax ?? '--')}°C
+                      </span>
+                      <span className={`block text-xs ${idx === 0 ? 'text-slate-300' : 'text-slate-400'}`}>
+                        Low: {day.minTemperature !== undefined ? day.minTemperature : (day.tempMin ?? '--')}°C
+                      </span>
+                    </div>
+
+                    <div className="mt-2 flex flex-col gap-1 w-full text-[10px]">
+                      <span className={`font-bold px-2 py-0.5 rounded-full ${
+                        idx === 0 ? 'bg-white/10 text-white' : 'bg-sky-50 text-sky-700 border border-sky-200'
+                      }`}>
+                        Rain: {day.rainProbability !== undefined ? day.rainProbability : (day.rainProb ?? 0)}%
+                      </span>
+                      <span className={`text-[9px] ${idx === 0 ? 'text-slate-300' : 'text-slate-400'}`}>
+                        {day.precipitation ?? 0} mm • {day.windSpeed ?? 0} km/h
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-              {weatherData.forecast.map((day, idx) => (
-                <div
-                  key={idx}
-                  className={`p-4 rounded-2xl border flex flex-col items-center justify-between text-center transition-all ${
-                    idx === 0
-                      ? 'bg-agri-900 text-white border-agri-950 shadow-md font-bold'
-                      : 'bg-white text-slate-800 border-slate-200/80 hover:shadow-sm font-semibold'
-                  }`}
-                >
-                  <div>
-                    <span className={`block text-xs font-bold ${idx === 0 ? 'text-agri-300' : 'text-slate-500'}`}>
-                      {day.day || (idx === 0 ? 'Today' : day.date)}
-                    </span>
-                    <span className={`block text-[10px] ${idx === 0 ? 'text-slate-300' : 'text-slate-400'}`}>
-                      {day.dateLabel || day.date}
-                    </span>
-                  </div>
-
-                  <div className="my-3">{getWeatherIcon(day.condition)}</div>
-
-                  <div>
-                    <span className="block text-base font-extrabold">
-                      {day.maxTemperature !== undefined ? day.maxTemperature : day.tempMax}°C
-                    </span>
-                    <span className={`block text-xs ${idx === 0 ? 'text-slate-300' : 'text-slate-400'}`}>
-                      Low: {day.minTemperature !== undefined ? day.minTemperature : day.tempMin}°C
-                    </span>
-                  </div>
-
-                  <div className="mt-2 flex flex-col gap-1 w-full text-[10px]">
-                    <span className={`font-bold px-2 py-0.5 rounded-full ${
-                      idx === 0 ? 'bg-white/10 text-white' : 'bg-sky-50 text-sky-700 border border-sky-200'
-                    }`}>
-                      Rain: {day.rainProbability !== undefined ? day.rainProbability : day.rainProb}%
-                    </span>
-                    <span className={`text-[9px] ${idx === 0 ? 'text-slate-300' : 'text-slate-400'}`}>
-                      {day.precipitation} mm • {day.windSpeed} km/h
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          )}
         </>
       )}
     </div>
