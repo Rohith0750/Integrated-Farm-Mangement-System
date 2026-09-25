@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, Sprout, TrendingUp, FlaskConical, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Sparkles, Sprout, TrendingUp, FlaskConical, ArrowRight, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { PageHeader } from '../components/common/PageHeader';
 import { predictionService } from '../services/predictionService';
 import {
@@ -12,6 +12,7 @@ import { useToast } from '../hooks/useToast';
 export const AIRecommendations: React.FC = () => {
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<'crop' | 'yield' | 'fertilizer'>('crop');
+  const [anomalyError, setAnomalyError] = useState<string | null>(null);
 
   // Crop Rec Form State
   const [nitrogen, setNitrogen] = useState(55);
@@ -41,6 +42,7 @@ export const AIRecommendations: React.FC = () => {
   const handleRecommendCrop = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsCropLoading(true);
+    setAnomalyError(null);
     try {
       const res = await predictionService.recommendCrop({
         nitrogen,
@@ -53,8 +55,11 @@ export const AIRecommendations: React.FC = () => {
       });
       setCropResults(res);
       showToast('ML Model Evaluated', 'Ranked crop suitability probabilities generated.', 'success');
-    } catch {
-      showToast('Evaluation Error', 'Failed to generate crop recommendation.', 'error');
+    } catch (err: any) {
+      setCropResults(null);
+      const msg = err?.response?.data?.message || 'Failed to generate crop recommendation.';
+      setAnomalyError(msg);
+      showToast('Agronomic Anomaly', msg, 'error');
     } finally {
       setIsCropLoading(false);
     }
@@ -63,6 +68,7 @@ export const AIRecommendations: React.FC = () => {
   const handlePredictYield = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsYieldLoading(true);
+    setAnomalyError(null);
     try {
       const res = await predictionService.predictYield({
         crop: selectedCrop,
@@ -75,8 +81,11 @@ export const AIRecommendations: React.FC = () => {
       });
       setYieldResult(res);
       showToast('Yield Forecast Generated', 'Predictive yield curve calculated.', 'success');
-    } catch {
-      showToast('Prediction Error', 'Failed to predict yield.', 'error');
+    } catch (err: any) {
+      setYieldResult(null);
+      const msg = err?.response?.data?.message || 'Failed to predict yield.';
+      setAnomalyError(msg);
+      showToast('Agronomic Anomaly', msg, 'error');
     } finally {
       setIsYieldLoading(false);
     }
@@ -85,6 +94,7 @@ export const AIRecommendations: React.FC = () => {
   const handleGetFertilizer = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsFertLoading(true);
+    setAnomalyError(null);
     try {
       const res = await predictionService.getFertilizerRecommendation({
         crop: fertCrop,
@@ -95,8 +105,11 @@ export const AIRecommendations: React.FC = () => {
       });
       setFertResult(res);
       showToast('Nutrient Gap Calculated', 'Fertilizer dosage advisory ready.', 'success');
-    } catch {
-      showToast('Error', 'Failed to generate fertilizer recommendation.', 'error');
+    } catch (err: any) {
+      setFertResult(null);
+      const msg = err?.response?.data?.message || 'Failed to generate fertilizer recommendation.';
+      setAnomalyError(msg);
+      showToast('Agronomic Anomaly', msg, 'error');
     } finally {
       setIsFertLoading(false);
     }
@@ -163,6 +176,23 @@ export const AIRecommendations: React.FC = () => {
           </div>
         </button>
       </div>
+
+      {/* Agronomic / Meteorological Anomaly Warning */}
+      {anomalyError && (
+        <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3 text-amber-900 animate-in fade-in shadow-xs">
+          <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <h4 className="font-bold text-sm text-amber-900">Agronomic & Meteorological Input Exception</h4>
+            <p className="text-xs text-amber-800 mt-1 leading-relaxed">{anomalyError}</p>
+          </div>
+          <button
+            onClick={() => setAnomalyError(null)}
+            className="text-xs font-bold text-amber-700 hover:text-amber-950 px-2.5 py-1 bg-amber-100/80 hover:bg-amber-200/80 rounded-lg transition-colors"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {/* TAB 1: CROP RECOMMENDATION */}
       {activeTab === 'crop' && (

@@ -25,6 +25,9 @@ const proxyToMLService = async (endpoint, method, payload) => {
   }
 };
 
+const geminiService = require('../services/geminiService');
+const { validateAgronomicInputs } = require('../utils/agronomicValidator');
+
 /**
  * @desc    Predict crop suitability
  * @route   POST /api/predictions/crop
@@ -32,12 +35,36 @@ const proxyToMLService = async (endpoint, method, payload) => {
  */
 const predictCrop = async (req, res, next) => {
   try {
+    // 0. Domain & Meteorological Sanity Validation
+    const validation = validateAgronomicInputs(req.body, 'crop');
+    if (!validation.isValid) {
+      return res.status(400).json({
+        success: false,
+        error: 'AGRONOMIC_VALIDATION_ERROR',
+        field: validation.field,
+        message: validation.message,
+      });
+    }
+
+    // 1. Try Google Gemini AI first for deep agronomic intelligence
+    try {
+      if (process.env.GEMINI_API_KEY) {
+        const geminiResult = await geminiService.recommendCrops(req.body);
+        if (geminiResult && Array.isArray(geminiResult) && geminiResult.length > 0) {
+          return res.status(200).json(geminiResult);
+        }
+      }
+    } catch (geminiError) {
+      console.warn('[Gemini AI Warning] Failed to generate crop recommendation via Gemini:', geminiError.message);
+    }
+
+    // 2. Try Python FastAPI ML Service proxy
     const result = await proxyToMLService('/predict/crop', 'POST', req.body);
     if (result) {
       return res.status(200).json(result);
     }
 
-    // Fallback predictions
+    // 3. Fallback predictions
     const { nitrogen, pH, rainfall } = req.body;
     if (rainfall > 150) {
       return res.status(200).json([
@@ -70,11 +97,36 @@ const predictCrop = async (req, res, next) => {
  */
 const predictYield = async (req, res, next) => {
   try {
+    // 0. Domain & Meteorological Sanity Validation
+    const validation = validateAgronomicInputs(req.body, 'yield');
+    if (!validation.isValid) {
+      return res.status(400).json({
+        success: false,
+        error: 'AGRONOMIC_VALIDATION_ERROR',
+        field: validation.field,
+        message: validation.message,
+      });
+    }
+
+    // 1. Try Google Gemini AI first
+    try {
+      if (process.env.GEMINI_API_KEY) {
+        const geminiResult = await geminiService.predictYield(req.body);
+        if (geminiResult && geminiResult.predictedYieldPerHectare) {
+          return res.status(200).json(geminiResult);
+        }
+      }
+    } catch (geminiError) {
+      console.warn('[Gemini AI Warning] Failed to forecast yield via Gemini:', geminiError.message);
+    }
+
+    // 2. Try Python FastAPI ML Service proxy
     const result = await proxyToMLService('/predict/yield', 'POST', req.body);
     if (result) {
       return res.status(200).json(result);
     }
 
+    // 3. Fallback predictions
     const { crop, areaHectares = 1, nitrogen = 40, rainfall = 100, temperature = 25 } = req.body;
     const baseYield = (crop || '').toLowerCase().includes('tomato') ? 3.8 : (crop || '').toLowerCase().includes('wheat') ? 3.5 : 4.0;
     const factor = (nitrogen / 40) * 0.9;
@@ -103,11 +155,36 @@ const predictYield = async (req, res, next) => {
  */
 const predictFertilizer = async (req, res, next) => {
   try {
+    // 0. Domain & Meteorological Sanity Validation
+    const validation = validateAgronomicInputs(req.body, 'fertilizer');
+    if (!validation.isValid) {
+      return res.status(400).json({
+        success: false,
+        error: 'AGRONOMIC_VALIDATION_ERROR',
+        field: validation.field,
+        message: validation.message,
+      });
+    }
+
+    // 1. Try Google Gemini AI first
+    try {
+      if (process.env.GEMINI_API_KEY) {
+        const geminiResult = await geminiService.recommendFertilizer(req.body);
+        if (geminiResult && geminiResult.nutrientGap) {
+          return res.status(200).json(geminiResult);
+        }
+      }
+    } catch (geminiError) {
+      console.warn('[Gemini AI Warning] Failed to recommend fertilizer via Gemini:', geminiError.message);
+    }
+
+    // 2. Try Python FastAPI ML Service proxy
     const result = await proxyToMLService('/predict/fertilizer', 'POST', req.body);
     if (result) {
       return res.status(200).json(result);
     }
 
+    // 3. Fallback calculations
     const { crop = 'Tomato', currentN = 30, currentP = 25, currentK = 35, pH = 6.5 } = req.body;
     const gapN = Math.max(0, 60 - currentN);
     const gapP = Math.max(0, 50 - currentP);
