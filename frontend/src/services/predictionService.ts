@@ -19,8 +19,13 @@ export const predictionService = {
     try {
       const res = await api.post('/predictions/crop', params);
       return res.data;
-    } catch {
-      // Simulate Machine Learning model evaluation logic
+    } catch (error: any) {
+      // If backend responded with an error (e.g. 400 Anomaly Validation), rethrow so UI displays it
+      if (error?.response?.data) {
+        throw error;
+      }
+
+      // Simulate Machine Learning model evaluation logic only if network is offline
       const { nitrogen, pH, rainfall } = params;
 
       if (rainfall > 150) {
@@ -57,7 +62,11 @@ export const predictionService = {
     try {
       const res = await api.post('/predictions/yield', params);
       return res.data;
-    } catch {
+    } catch (error: any) {
+      if (error?.response?.data) {
+        throw error;
+      }
+
       const baseYield = params.crop.toLowerCase().includes('tomato') ? 3.8 : params.crop.toLowerCase().includes('wheat') ? 3.5 : 4.0;
       const factor = (params.nitrogen / 40) * 0.9;
       const yieldPerHa = Number((baseYield * Math.min(1.2, Math.max(0.7, factor))).toFixed(2));
@@ -86,7 +95,11 @@ export const predictionService = {
     try {
       const res = await api.post('/predictions/fertilizer', params);
       return res.data;
-    } catch {
+    } catch (error: any) {
+      if (error?.response?.data) {
+        throw error;
+      }
+
       const gapN = Math.max(0, 60 - params.currentN);
       const gapP = Math.max(0, 50 - params.currentP);
       const gapK = Math.max(0, 70 - params.currentK);
